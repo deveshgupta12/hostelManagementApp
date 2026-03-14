@@ -44,6 +44,30 @@ resolve_python() {
 
 PYTHON_CMD="$(resolve_python)"
 
+run_pip_install() {
+  local pip_args=("$@")
+  local output
+
+  set +e
+  output=$("$PYTHON_CMD" -m pip "${pip_args[@]}" 2>&1)
+  local status=$?
+  set -e
+
+  if [ "$status" -eq 0 ]; then
+    printf "%s\n" "$output"
+    return 0
+  fi
+
+  if printf "%s" "$output" | grep -qi "externally-managed-environment"; then
+    log "Detected externally managed Python (PEP 668). Retrying with --break-system-packages."
+    "$PYTHON_CMD" -m pip "${pip_args[@]}" --break-system-packages
+    return 0
+  fi
+
+  printf "%s\n" "$output" >&2
+  return "$status"
+}
+
 if ! command_exists npm; then
   fail "npm is not installed. Install Node.js (20+) and rerun."
 fi
@@ -54,8 +78,8 @@ fi
 
 log "Installing backend Python dependencies"
 cd "$BACKEND_DIR"
-"$PYTHON_CMD" -m pip install --upgrade pip
-"$PYTHON_CMD" -m pip install -r requirements.txt
+run_pip_install install --upgrade pip
+run_pip_install install -r requirements.txt
 
 if [ ! -f ".env" ] && [ -f ".env.example" ]; then
   cp .env.example .env

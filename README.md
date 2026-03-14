@@ -111,6 +111,7 @@ On backend startup, the app:
 - If imports are unresolved in editor, install dependencies in both backend and frontend.
 - If database connection fails, verify PostgreSQL is running and DATABASE_URL is correct.
 - If pip is missing, install it and rerun using `python -m pip ...` commands.
+- On Ubuntu/Debian with Python 3.12+, you may see `externally-managed-environment` (PEP 668). `install.sh` now auto-retries with `--break-system-packages` for this project setup.
 
 ## Production Notes
 
