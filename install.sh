@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# HostelHub India Linux installation script
+# HostelHub India Linux installation script (no virtualenv)
 # Usage:
 #   bash install.sh
 # Optional environment variables:
@@ -42,20 +42,7 @@ resolve_python() {
   fail "Python is not installed. Install Python 3.11+ and rerun."
 }
 
-resolve_pip() {
-  if command_exists pip3; then
-    echo "pip3"
-    return
-  fi
-  if command_exists pip; then
-    echo "pip"
-    return
-  fi
-  fail "pip is not installed. Install pip and rerun."
-}
-
 PYTHON_CMD="$(resolve_python)"
-PIP_CMD="$(resolve_pip)"
 
 if ! command_exists npm; then
   fail "npm is not installed. Install Node.js (20+) and rerun."
@@ -67,22 +54,13 @@ fi
 
 log "Installing backend Python dependencies"
 cd "$BACKEND_DIR"
-
-if [ ! -d ".venv" ]; then
-  "$PYTHON_CMD" -m venv .venv
-fi
-
-# shellcheck disable=SC1091
-source .venv/bin/activate
-"$PIP_CMD" install --upgrade pip
-"$PIP_CMD" install -r requirements.txt
+"$PYTHON_CMD" -m pip install --upgrade pip
+"$PYTHON_CMD" -m pip install -r requirements.txt
 
 if [ ! -f ".env" ] && [ -f ".env.example" ]; then
   cp .env.example .env
   log "Created backend/.env from backend/.env.example"
 fi
-
-deactivate || true
 
 log "Installing frontend Node dependencies"
 cd "$FRONTEND_DIR"
@@ -110,7 +88,6 @@ Installation complete.
 Next steps:
 1) Start backend:
    cd backend
-   source .venv/bin/activate
    uvicorn app.main:app --reload
 
 2) Start frontend in a new terminal:

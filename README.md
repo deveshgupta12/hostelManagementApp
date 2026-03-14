@@ -43,11 +43,12 @@ From project root:
 
 ```powershell
 cd backend
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 Copy-Item .env.example .env
 ```
+
+This project is configured to run without a virtual environment. Dependencies are installed into your active/system Python environment.
 
 Update backend/.env values if needed:
 
@@ -109,11 +110,7 @@ On backend startup, the app:
 
 - If imports are unresolved in editor, install dependencies in both backend and frontend.
 - If database connection fails, verify PostgreSQL is running and DATABASE_URL is correct.
-- If PowerShell blocks venv activation, run:
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-```
+- If pip is missing, install it and rerun using `python -m pip ...` commands.
 
 ## Production Notes
 
