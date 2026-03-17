@@ -27,6 +27,30 @@ Optional but recommended:
 - Git
 - pgAdmin or any PostgreSQL client
 
+## Quick Install (Recommended for Linux)
+
+From project root:
+
+```bash
+bash install.sh
+```
+
+Optional full setup with SQL schema apply:
+
+```bash
+APPLY_SCHEMA=1 bash install.sh
+```
+
+Optional custom DB values:
+
+```bash
+DB_NAME=hostelhub DB_USER=postgres DB_PASSWORD=postgres DB_HOST=localhost DB_PORT=5432 APPLY_SCHEMA=1 bash install.sh
+```
+
+Notes:
+- `install.sh` installs system dependencies, configures PostgreSQL, creates/updates `backend/.env`, installs backend/frontend dependencies.
+- `APPLY_SCHEMA=1` applies `backend/db/schema.sql` to the target database.
+
 ## 1) Database Setup (PostgreSQL)
 
 Create a database named hostelhub.
@@ -35,6 +59,12 @@ Example using psql:
 
 ```sql
 CREATE DATABASE hostelhub;
+```
+
+Optional manual schema apply:
+
+```bash
+psql -h localhost -U postgres -d hostelhub -f backend/db/schema.sql
 ```
 
 ## 2) Backend Setup (FastAPI)

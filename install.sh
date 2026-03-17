@@ -5,7 +5,7 @@ set -euo pipefail
 # Usage:
 #   bash install.sh
 # Optional environment variables:
-#   DB_NAME=hostelhub DB_USER=postgres DB_PASSWORD=postgres DB_HOST=localhost DB_PORT=5432 bash install.sh
+#   DB_NAME=hostelhub DB_USER=postgres DB_PASSWORD=postgres DB_HOST=localhost DB_PORT=5432 APPLY_SCHEMA=1 bash install.sh
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="$PROJECT_ROOT/backend"
@@ -16,6 +16,7 @@ DB_USER="${DB_USER:-postgres}"
 DB_PASSWORD="${DB_PASSWORD:-postgres}"
 DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5432}"
+APPLY_SCHEMA="${APPLY_SCHEMA:-0}"
 
 log() {
   printf "\n[HostelHub Installer] %s\n" "$1"
@@ -178,6 +179,25 @@ END
 SQL
 }
 
+apply_schema_if_requested() {
+  if [ "$APPLY_SCHEMA" != "1" ]; then
+    return
+  fi
+
+  local schema_file="$BACKEND_DIR/db/schema.sql"
+  if [ ! -f "$schema_file" ]; then
+    warn "APPLY_SCHEMA=1 set, but schema file not found at $schema_file. Skipping schema apply."
+    return
+  fi
+
+  log "Applying SQL schema from backend/db/schema.sql"
+  if [ "$DB_USER" = "postgres" ]; then
+    PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$schema_file"
+  else
+    PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$schema_file"
+  fi
+}
+
 run_pip_install() {
   local pip_args=("$@")
   local output
@@ -265,6 +285,7 @@ main() {
   check_versions
   start_postgres_service
   configure_database
+  apply_schema_if_requested
   write_backend_env
   install_backend_dependencies
   install_frontend_dependencies
@@ -275,6 +296,7 @@ Installation complete.
 
 Configured values:
 - DATABASE_URL=postgresql+psycopg2://${DB_USER}:********@${DB_HOST}:${DB_PORT}/${DB_NAME}
+- APPLY_SCHEMA=${APPLY_SCHEMA}
 
 Next steps:
 1) Start backend:
