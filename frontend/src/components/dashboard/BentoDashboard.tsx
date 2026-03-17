@@ -83,7 +83,7 @@ type ReceiptPayload = {
   transaction: TransactionItem;
 };
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 const DEFAULT_ROOM_DAILY_RENT = 1200;
 const FUNCTION_WINDOW_CLASS = "rounded-3xl border border-slate-200 bg-white p-4 shadow-panel";
 
