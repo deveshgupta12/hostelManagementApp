@@ -47,18 +47,24 @@ def on_startup() -> None:
                 db.add(FeatureSetting(feature_name=feature, enabled=True))
         db.commit()
 
-        has_super_admin = db.query(User).filter(User.role == UserRole.SUPER_ADMIN).first()
-        if not has_super_admin:
-            # Seed-only placeholder account hash; replace in production via admin flow.
+        # bcrypt hash of "Admin@123"
+        SEEDED_HASH = "$2b$12$NTYRgNL1GVFKQVPkNv8rJ..hkRuQTa.sKqa3f0rjVJiQUB0sQF98y"
+
+        super_admin = db.query(User).filter(User.role == UserRole.SUPER_ADMIN).first()
+        if not super_admin:
             db.add(
                 User(
                     full_name="Super Admin",
                     email="superadmin@hostelhub.in",
-                    password_hash="$2b$12$6jcw91a2AA6fNfX6ESp2POb6QfMV6j08cA0xSiKf4V4mL5e8hqo9G",
+                    password_hash=SEEDED_HASH,
                     role=UserRole.SUPER_ADMIN,
                     is_active=True,
                 )
             )
+            db.commit()
+        elif super_admin.password_hash == "$2b$12$6jcw91a2AA6fNfX6ESp2POb6QfMV6j08cA0xSiKf4V4mL5e8hqo9G":
+            # Fix previously stored broken hash
+            super_admin.password_hash = SEEDED_HASH
             db.commit()
     finally:
         db.close()
